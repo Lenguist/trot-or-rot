@@ -1,4 +1,6 @@
-simulation/logs
-simulation/training_runs
-simulation/venv
-simulation/__pycache__
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore embedded Bullet3 repo
+bullet3/
