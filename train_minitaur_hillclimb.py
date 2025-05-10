@@ -31,7 +31,7 @@ def evaluate(env, theta, max_steps=1000):
 
 if __name__ == "__main__":
     # Hyperparameters
-    n_iters = 10000     # hill-climbing iterations
+    n_iters = 5000     # hill-climbing iterations
     sigma = 0.1       # noise stddev for perturbations
     max_steps = 1000  # steps per evaluation
 
