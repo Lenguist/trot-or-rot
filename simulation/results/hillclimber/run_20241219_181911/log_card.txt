@@ -1,0 +1,24 @@
+===== LOG CARD =====
+Date/Time: 20241219_181911
+Learner: HillClimberV1
+
+Robot Assumptions:
+hip_max_force: 50
+knee_max_force: 50
+position_gain: 0.8
+velocity_gain: 0.8
+
+Learner Parameters:
+max_iterations: 20000
+mutation_rate: 0.5
+mutation_scale: 0.1
+log_interval: 500
+
+Simulation Parameters:
+fps: 240
+run_duration: 10
+settling_time: 1
+floor_friction: 0.5
+
+User Notes:
+running very long run should be done after i am back

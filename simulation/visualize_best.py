@@ -14,9 +14,12 @@ from robot_config import (
     KNEE_MAX_FORCE,
     POSITION_GAIN,
     VELOCITY_GAIN,
-    FLOOR_FRICTION_COEFFICIENT,
+    FLOOR_FRICTION_COEFFICIENT
 )
 
+SIMULATION_FPS = 240
+RUN_DURATION = 20
+SETTLING_TIME = 0.5
 ROBOT_URDF = "urdf-assembly.urdf"
 START_POS = [0, 0, 0.5]
 START_ORIENTATION = [math.radians(90), 0, 0]
@@ -25,20 +28,19 @@ HIP_JOINTS = [0, 2, 4, 6]
 KNEE_JOINTS = [1, 3, 5, 7]
 ALL_JOINTS = HIP_JOINTS + KNEE_JOINTS
 
-SIMULATION_FPS = 240
-SIMULATION_DURATION = 10
-TOTAL_STEPS = SIMULATION_FPS * SIMULATION_DURATION
-SETTLING_TIME = 0.5
+TOTAL_STEPS = SIMULATION_FPS * RUN_DURATION
 SETTLING_STEPS = int(SIMULATION_FPS * SETTLING_TIME)
 
-# Camera configuration
-CAMERA_DISTANCE = 0.75   # Half the original distance
-CAMERA_YAW = 45
-CAMERA_PITCH = -30
-
-def setup_pybullet(gui=True):
+def setup_pybullet(gui=False):
     if gui:
         p.connect(p.GUI)
+        # Set an initial closer camera view
+        p.resetDebugVisualizerCamera(
+            cameraDistance=1.5, 
+            cameraYaw=0, 
+            cameraPitch=-30, 
+            cameraTargetPosition=[0, 0, 0]
+        )
     else:
         p.connect(p.DIRECT)
     p.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -54,25 +56,21 @@ def reset_simulation(robot_urdf, start_pos, start_orientation):
     for link in range(p.getNumJoints(robot_id)):
         p.changeDynamics(robot_id, link, lateralFriction=FLOOR_FRICTION_COEFFICIENT)
     
+    # Simulate settling
     for _ in range(SETTLING_STEPS):
         p.stepSimulation()
-        time.sleep(1.0/SIMULATION_FPS)
 
-    # Initialize camera on the robot's start position
-    p.resetDebugVisualizerCamera(
-        cameraDistance=CAMERA_DISTANCE,
-        cameraYaw=CAMERA_YAW,
-        cameraPitch=CAMERA_PITCH,
-        cameraTargetPosition=start_pos
-    )
+    # Reset base position and orientation to match training code
+    p.resetBasePositionAndOrientation(robot_id, start_pos, quat)
 
     return robot_id
 
-def apply_gait(robot_id, joint_functions, total_steps):
+def apply_gait(robot_id, joint_functions, total_steps, gui_mode=False):
     data_records = []
     previous_x = None
     speed = 0.0
 
+    # Safe environment for eval
     safe_globals = {"math": math}
 
     for step in range(total_steps):
@@ -105,20 +103,12 @@ def apply_gait(robot_id, joint_functions, total_steps):
             )
         
         p.stepSimulation()
-        time.sleep(1.0/SIMULATION_FPS)  # Real-time visualization
-
+        
+        # Record data every 10 steps
         if step % 10 == 0:
             base_pos, base_orient = p.getBasePositionAndOrientation(robot_id)
             base_euler = p.getEulerFromQuaternion(base_orient)
             
-            # Update camera to follow the robot
-            p.resetDebugVisualizerCamera(
-                cameraDistance=CAMERA_DISTANCE,
-                cameraYaw=CAMERA_YAW,
-                cameraPitch=CAMERA_PITCH,
-                cameraTargetPosition=[base_pos[0], base_pos[1], base_pos[2]]
-            )
-
             if previous_x is not None:
                 dx = base_pos[0] - previous_x
                 speed = dx / (10 / SIMULATION_FPS)
@@ -135,6 +125,15 @@ def apply_gait(robot_id, joint_functions, total_steps):
                 'speed_m_s': speed
             }
             data_records.append(record)
+
+            # If GUI is enabled, follow the robot by updating camera target
+            if gui_mode:
+                p.resetDebugVisualizerCamera(
+                    cameraDistance=1.5,
+                    cameraYaw=0,
+                    cameraPitch=-30,
+                    cameraTargetPosition=[base_pos[0], base_pos[1], base_pos[2]]
+                )
     return data_records
 
 def save_data_records_csv(data_records, filename):
@@ -147,9 +146,9 @@ def save_data_records_csv(data_records, filename):
         writer.writerows(data_records)
 
 def plot_robot_motion(data_records, filename):
-    times = [r['time'] for r in data_records]
-    if not times:
+    if not data_records:
         return
+    times = [r['time'] for r in data_records]
     x = [r['x'] for r in data_records]
     y = [r['y'] for r in data_records]
     z = [r['z'] for r in data_records]
@@ -184,16 +183,18 @@ def plot_robot_motion(data_records, filename):
     plt.close()
 
 def main():
-    parser = argparse.ArgumentParser(description="Visualize Best Parameters From a Run (Close-up, Follow Cam)")
+    parser = argparse.ArgumentParser(description="Visualize Best Parameters From a Run")
     parser.add_argument('--run', type=str, required=True, help="Name of the training run (e.g., run_20240101_123000)")
+    parser.add_argument('--gui', action='store_true', help="Enable GUI mode in PyBullet")
     args = parser.parse_args()
 
     run_name = args.run
+    gui_mode = args.gui
+
     results_dir = os.path.join("results/hillclimber", run_name)
     analysis_dir = os.path.join(results_dir, "analysis")
     os.makedirs(analysis_dir, exist_ok=True)
 
-    # Load best params from values.json
     values_file = os.path.join(results_dir, "values.json")
     if not os.path.exists(values_file):
         print(f"No values.json found in {results_dir}")
@@ -208,10 +209,10 @@ def main():
 
     joint_functions = values["joint_functions"]
 
-    # Simulate once with best parameters to record motion
-    setup_pybullet(gui=True)
+    setup_pybullet(gui=gui_mode)
     robot_id = reset_simulation(ROBOT_URDF, START_POS, START_ORIENTATION)
-    data_records = apply_gait(robot_id, joint_functions, TOTAL_STEPS)
+    data_records = apply_gait(robot_id, joint_functions, TOTAL_STEPS, gui_mode=gui_mode)
+    p.disconnect()
 
     # Save data records
     simulation_data_csv = os.path.join(analysis_dir, 'simulation_data.csv')
@@ -221,15 +222,6 @@ def main():
     plot_robot_motion(data_records, os.path.join(analysis_dir, 'robot_motion.png'))
 
     print(f"Visualization complete! Results saved in: {analysis_dir}")
-    print("You can observe the robot in the PyBullet GUI. Close the GUI window when done.")
-
-    # Keep the GUI open until user closes it
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        pass
-    p.disconnect()
 
 if __name__ == "__main__":
     main()

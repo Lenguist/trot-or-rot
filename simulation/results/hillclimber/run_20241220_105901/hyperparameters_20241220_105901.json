@@ -1,0 +1,30 @@
+{
+    "optimization": {
+        "max_iterations": 10000,
+        "mutation_rate": 0.9,
+        "mutation_scale": 0.5,
+        "log_interval": 1000
+    },
+    "simulation": {
+        "fps": 240,
+        "run_duration": 20,
+        "settling_time": 1,
+        "floor_friction": 0.1
+    },
+    "robot": {
+        "hip_max_force": 50,
+        "knee_max_force": 50,
+        "position_gain": 0.8,
+        "velocity_gain": 0.8
+    },
+    "parameter_ranges": {
+        "a_min": -20,
+        "a_max": 20,
+        "b_min": -10,
+        "b_max": 10,
+        "c_min": 0,
+        "c_max": 6.283185307179586,
+        "omega_min": 0.5,
+        "omega_max": 10
+    }
+}

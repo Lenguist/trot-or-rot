@@ -1,0 +1,42 @@
+===== LOG CARD =====
+Date/Time: 20241221_162852
+Learner: HillClimberV1
+
+Robot Assumptions:
+hip_max_force: 50
+knee_max_force: 0
+position_gain: 0.8
+velocity_gain: 0.8
+
+Learner Parameters:
+max_iterations: 1000
+mutation_rate: 0.9
+mutation_scale: 0.5
+log_interval: 100
+
+Simulation Parameters:
+fps: 240
+run_duration: 10
+settling_time: 1
+floor_friction: 0.5
+
+User Notes:
+no knees
+
+=== FINAL RESULTS ===
+Best Distance (m): 0.1184
+Speed (m/s): 0.0118 (which is 1.18 cm/s)
+
+Final Functions:
+Model-Agnostic Representation:
+Here we used a sinusoidal model, but we store them as generic functions.
+Format: each joint has an expression and parameters.
+
+Joint 0: a + b * math.sin(omega*t + c) with {'a': 1.6245283225032987, 'b': -1.2426974874388674, 'c': 0.9674497250238447, 'omega': 5}
+Joint 1: a + b * math.sin(omega*t + c) with {'a': 1.809503023886747, 'b': 0.7442664065878619, 'c': 1.1026056062353362, 'omega': 5}
+Joint 2: a + b * math.sin(omega*t + c) with {'a': -1.7908941363263398, 'b': -4.556642153183011, 'c': 5.60415627388698, 'omega': 5}
+Joint 3: a + b * math.sin(omega*t + c) with {'a': -2.2537921026979024, 'b': 9.811570912133917, 'c': 1.874079607599782, 'omega': 5}
+Joint 4: a + b * math.sin(omega*t + c) with {'a': 1.4309972611865993, 'b': 3.9566941971296488, 'c': 0.3597844159976429, 'omega': 5}
+Joint 5: a + b * math.sin(omega*t + c) with {'a': -7.100327529673693, 'b': -8.616296458467627, 'c': 0.27177254613929946, 'omega': 5}
+Joint 6: a + b * math.sin(omega*t + c) with {'a': 1.6725568854867823, 'b': 7.28961519969051, 'c': 3.382916116295501, 'omega': 5}
+Joint 7: a + b * math.sin(omega*t + c) with {'a': 1.1236590168215312, 'b': -5.316852409254107, 'c': 6.040024410174965, 'omega': 5}

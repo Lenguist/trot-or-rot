@@ -43,8 +43,8 @@ MAX_TORQUE_NM = MAX_TORQUE_KG_CM * 0.0980665  # ≈1.667 N.m
 # Calculating Maximum Force per Joint
 # Force (N) = Torque (N.m) / Link Length (m)
 LINK_LENGTH = 0.013  # 13 mm in meters
-MAX_FORCE = MAX_TORQUE_NM / LINK_LENGTH  # ≈128 N
-
+# MAX_FORCE = MAX_TORQUE_NM / LINK_LENGTH  # ≈128 N
+MAX_FORCE = 50 # updated max_force to be lower so it can't jump as high
 # ------------------------ Motor Force Limits ------------------------ #
 # Maximum force each motor can apply
 HIP_MAX_FORCE = MAX_FORCE
@@ -61,10 +61,10 @@ VELOCITY_GAIN = 0.8  # Between 0.5 and 1.0 for smooth velocity control
 # Gait Parameters Ranges (degrees)
 # gait is a+b(omega t +c) for each motor
 # we restrict motors so max angle away from nowm is always 30.
-A_MIN, A_MAX = -20, 20             # Range for 'a' parameters
+A_MIN, A_MAX = -10, 10             # Range for 'a' parameters
 B_MIN, B_MAX = -10, 10             # Range for 'b' parameters
 C_MIN, C_MAX = 0, 2 * math.pi    # Range for 'c' parameters
-OMEGA_MIN, OMEGA_MAX = 0.5, 10   # Range for 'omega' parameter
+OMEGA_MIN, OMEGA_MAX = 0.5, 5   # Range for 'omega' parameter
 
 # ------------------------ Friction Coefficients ------------------------ #
 # Friction between robot feet and the floor

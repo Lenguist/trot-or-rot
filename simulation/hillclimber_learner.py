@@ -27,10 +27,10 @@ from robot_config import (
 )
 
 # ------------------------ Hill Climber Parameters ------------------------ #
-MAX_ITERATIONS = 300
-MUTATION_RATE = 0.5
-MUTATION_SCALE = 0.1
-LOG_INTERVAL = 50
+MAX_ITERATIONS = 10000
+MUTATION_RATE = 0.9
+MUTATION_SCALE = 0.5
+LOG_INTERVAL = 1000
 
 LEARNER_NAME = "HillClimberV1"
 
@@ -42,7 +42,7 @@ RESULTS_DIR = "results/hillclimber"
 SIMULATION_FPS = 240
 RUN_DURATION = 10
 TOTAL_STEPS = SIMULATION_FPS * RUN_DURATION
-SETTLING_TIME = 0.5
+SETTLING_TIME = 1
 SETTLING_STEPS = int(SIMULATION_FPS * SETTLING_TIME)
 
 class GaitParameters:
